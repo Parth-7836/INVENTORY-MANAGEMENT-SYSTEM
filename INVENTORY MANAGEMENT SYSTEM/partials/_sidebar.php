@@ -58,7 +58,7 @@
         <a href="purchase.php" class="ms-3">📋 View Purchases</a>
         <a href="suppliers.php" class="ms-3">🏭 Suppliers</a>
     </div>
-    <a href="reports.php">📊 Reports</a>
+    <a href="warehouse.php">🏬 Warehouse</a>
     <a href="settings.php">⚙️ Settings</a>
     <a href="logout.php" class="text-danger">🚪 Logout</a>
 </div>
