@@ -47,7 +47,7 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-    <h4 class="text-center text-white">📦 Staff Dashboard</h4>
+    <h4 class="text-white">📦 Staff Dashboard</h4>
     <hr class="text-white">
     <a href="staff_dashboard.php">🏠 Dashboard</a>
     <a href="inventory.php">📦 Inventory</a>
@@ -60,7 +60,7 @@
     </div>
     <a href="warehouse.php">🏬 Warehouse</a>
     <a href="settings.php">⚙️ Settings</a>
-    <a href="logout.php" class="text-danger">🚪 Logout</a>
 </div>
+
 </body>
 </html>

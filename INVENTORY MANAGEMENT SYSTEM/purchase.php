@@ -6,6 +6,7 @@ if (!isset($_SESSION['user']) || $_SESSION['role'] != 'staff') {
 }
 include 'partials/_dbconnect.php';
 include 'partials/_sidebar.php';
+
 // Handle new purchase order creation
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $supplier_id = $_POST['supplier_id'];
@@ -20,6 +21,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: purchase.php?success=Purchase Order Created");
     } else {
         echo "Error: " . mysqli_error($conn);
+    }
+}
+// Handle status update
+if (isset($_GET['order_id']) && isset($_GET['update_status'])) {
+    $order_id = $_GET['order_id'];
+    $new_status = $_GET['update_status'];
+
+    // Validate the status value
+    $valid_statuses = ['Pending', 'Processing', 'Received'];
+    if (!in_array($new_status, $valid_statuses)) {
+        die("Invalid status value.");
+    }
+
+    // Update the status in the database
+    $updateQuery = "UPDATE purchase_orders SET status = '$new_status' WHERE id = '$order_id'";
+    if (mysqli_query($conn, $updateQuery)) {
+        header("Location: purchase.php?success=Order Status Updated");
+        exit();
+    } else {
+        echo "Error updating status: " . mysqli_error($conn);
     }
 }
 
@@ -40,18 +61,24 @@ $suppliers = mysqli_query($conn, "SELECT * FROM suppliers");
     <title>Purchase Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-
     <!-- Main Content -->
     <div class="main-content">
         <div class="top-bar d-flex justify-content-between align-items-center">
-            <h4>📋 View Purchases</h4>
+            <h4>📦 Purchase Management</h4>
+            <div class="d-flex align-items-center">
+                <img src="<?= htmlspecialchars($_SESSION['profile_picture']) ?>" alt="Profile Picture" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                <span class="ms-2">Welcome, <strong><?= htmlspecialchars($_SESSION['user']) ?></strong></span>
+                <a href="logout.php" class="btn btn-danger btn-sm ms-3">Logout</a>
+            </div>
         </div>
 
         <!-- Success Message -->
         <?php if (isset($_GET['success'])): ?>
-            <div class="alert alert-success"><?= $_GET['success'] ?></div>
+            <div id="success" class="alert alert-success"><?= $_GET['success'] ?></div>
         <?php endif; ?>
 
         <!-- Create New Purchase Order -->
@@ -71,6 +98,19 @@ $suppliers = mysqli_query($conn, "SELECT * FROM suppliers");
                     <div class="mb-3">
                         <label class="form-label">Product Name</label>
                         <input type="text" name="product_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-category" class="form-label">Category</label>
+                        <select class="form-control" id="add-category" name="category" required>
+                        <option>Select Category</option>
+                            <option value="Antibiotics">Antibiotics</option>
+                            <option value="Antivirals">Antivirals</option>
+                            <option value="Pain Relievers (Analgesics)">Pain Relievers (Analgesics)</option>
+                            <option value="Anti-inflammatory Drugs">Anti-inflammatory Drugs</option>
+                            <option value="Cardiovascular Drugs">Cardiovascular Drugs</option>
+                            <option value="Diabetes Medications">Diabetes Medications</option>
+                            <option value="Neurological & Psychiatric Drugs">Neurological & Psychiatric Drugs</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Quantity</label>
@@ -115,15 +155,15 @@ $suppliers = mysqli_query($conn, "SELECT * FROM suppliers");
                                 </span>
                             </td>
                             <td>
-                                <!-- Update Status -->
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">Update Status</button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="?order_id=<?= $row['id'] ?>&update_status=Processing">Processing</a></li>
-                                        <li><a class="dropdown-item" href="?order_id=<?= $row['id'] ?>&update_status=Received">Received</a></li>
-                                    </ul>
-                                </div>
-                            </td>
+    <!-- Update Status -->
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">Update Status</button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="?order_id=<?= $row['id'] ?>&update_status=Processing">Processing</a></li>
+            <li><a class="dropdown-item" href="?order_id=<?= $row['id'] ?>&update_status=Received">Received</a></li>
+        </ul>
+    </div>
+</td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -132,5 +172,19 @@ $suppliers = mysqli_query($conn, "SELECT * FROM suppliers");
         </div>
 
     </div>
+    {{-- Hide errors automatic --}}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            let alertBox = document.getElementById("success");
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.5s";
+                alertBox.style.opacity = "0";
+                setTimeout(() => alertBox.remove(), 500); // Remove element after fade out
+            }
+        }, 2000); // 3 seconds delay
+    });
+</script>
+
 </body>
 </html>

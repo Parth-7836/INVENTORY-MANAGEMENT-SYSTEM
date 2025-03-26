@@ -2,37 +2,43 @@
 session_start();
 include 'partials/_dbconnect.php';
 
-// Function to check if a user exists
-function userExists($conn, $username) {
-    $sql = "SELECT id FROM staff WHERE username = '$username'";
+// Function to check if an admin user exists
+function userExists($conn, $email) {
+    $sql = "SELECT id FROM staff WHERE email = '$email'";
     $result = $conn->query($sql);
     // Return true if user exists, false otherwise
     return $result->num_rows > 0;
 }
 
 // Auto-create Admin if not exists
-if (!userExists($conn, "admin")) {
+if (!userExists($conn, "admin@example.com")) {
     $admin_pass = password_hash("admin123", PASSWORD_BCRYPT);
-    $conn->query("INSERT INTO staff (username, password, role) VALUES ('admin', '$admin_pass', 'admin')");
+    $conn->query("INSERT INTO staff (email, password, role) VALUES ('admin@example.com', '$admin_pass', 'admin')");
 }
 
 $error = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
-    // Check if the user exists
-    $sql = "SELECT * FROM staff WHERE username = '$username'";
-    $result = $conn->query($sql);
-    // If user exists, verify the password
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        // Verify the password
-        if (password_verify($password, $row['password'])) {
-            $_SESSION['user'] = $row['username'];
-            $_SESSION['role'] = $row['role'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = $_POST['password'];
 
-            if ($row['role'] == "admin") {
+    // Query to fetch user details by email
+    $loginQuery = "SELECT * FROM staff WHERE email = '$email'";
+    $result = mysqli_query($conn, $loginQuery);
+
+    if ($result && mysqli_num_rows($result) == 1) {
+        $user = mysqli_fetch_assoc($result);
+
+        // Verify the password
+        if (password_verify($password, $user['password'])) {
+            // Set session variables
+            $_SESSION['user_id'] = $user['id']; // Store user ID in session
+            $_SESSION['user'] = $user['username']; // Store username in session
+            $_SESSION['role'] = $user['role'];
+            $_SESSION['profile_picture'] = $user['profile_picture'];
+
+            // Redirect based on role
+            if ($user['role'] == 'admin') {
                 header("Location: admin_dashboard.php");
             } else {
                 header("Location: staff_dashboard.php");
@@ -46,7 +52,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,8 +72,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         <form method="post">
             <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required>
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" required>
             </div>
             
             <div class="mb-3">

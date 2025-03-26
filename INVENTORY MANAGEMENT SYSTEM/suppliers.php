@@ -70,11 +70,16 @@ $suppliers = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY name");
     <div class="main-content">
         <div class="top-bar d-flex justify-content-between align-items-center">
             <h4>🏭 Suppliers</h4>
+            <div class="d-flex align-items-center">
+                <img src="<?= htmlspecialchars($_SESSION['profile_picture']) ?>" alt="Profile Picture" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                <span class="ms-2">Welcome, <strong><?= htmlspecialchars($_SESSION['user']) ?></strong></span>
+                <a href="logout.php" class="btn btn-danger btn-sm ms-3">Logout</a>
+            </div>
         </div>
 
         <!-- Success Message -->
         <?php if (isset($_GET['success'])): ?>
-            <div class="alert alert-success"><?= $_GET['success'] ?></div>
+            <div id="success" class="alert alert-success"><?= $_GET['success'] ?></div>
         <?php endif; ?>
 
         <!-- Add Supplier Form -->
@@ -88,7 +93,7 @@ $suppliers = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY name");
                     </div>
                     <div class="mb-3">
                         <label for="contact" class="form-label">Contact</label>
-                        <input type="text" name="contact" maxlength="10" id="contact" class="form-control" required>
+                        <input type="text" name="contact" id="contact" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
@@ -200,6 +205,16 @@ $suppliers = mysqli_query($conn, "SELECT * FROM suppliers ORDER BY name");
             modalEmail.value = email;
             modalAddress.value = address;
         });
+        document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            let alertBox = document.getElementById("success");
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.5s";
+                alertBox.style.opacity = "0";
+                setTimeout(() => alertBox.remove(), 500); // Remove element after fade out
+            }
+        }, 2000); // 3 seconds delay
+    });
     </script>
 </body>
 </html>

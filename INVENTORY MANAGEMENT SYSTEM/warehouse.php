@@ -11,12 +11,12 @@ include 'partials/_sidebar.php';
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_warehouse'])) {
     $name = $_POST['name'];
     $location = $_POST['location'];
-    $total_products = $_POST['total_products'];
-    $total_quantity = $_POST['total_quantity'];
+    $category = $_POST['category'];
+    $stock = $_POST['stock'];
     $expiry_date = $_POST['expiry_date'];
 
-    $sql = "INSERT INTO warehouses (name, location, total_products, total_quantity, expiry_date) 
-            VALUES ('$name', '$location', '$total_products', '$total_quantity', '$expiry_date')";
+    $sql = "INSERT INTO warehouses (name, location, category, stock, expiry_date) 
+            VALUES ('$name', '$location', '$category', '$stock', '$expiry_date')";
     mysqli_query($conn, $sql);
     header("Location: warehouse.php?success=Warehouse Added");
     exit();
@@ -27,12 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_warehouse'])) {
     $id = $_POST['id'];
     $name = $_POST['name'];
     $location = $_POST['location'];
-    $total_products = $_POST['total_products'];
-    $total_quantity = $_POST['total_quantity'];
+    $category = $_POST['category'];
+    $stock = $_POST['stock'];
     $expiry_date = $_POST['expiry_date'];
-
-    $sql = "UPDATE warehouses SET name='$name', location='$location', total_products='$total_products', 
-            total_quantity='$total_quantity', expiry_date='$expiry_date' WHERE id='$id'";
+    $sql = "UPDATE warehouses SET name='$name', location='$location', category='$category', stock='$stock', expiry_date='$expiry_date' WHERE id='$id'";
     mysqli_query($conn, $sql);
     header("Location: warehouse.php?success=Warehouse Updated");
     exit();
@@ -78,11 +76,16 @@ $warehouseResult = mysqli_query($conn, $warehouseQuery);
 <div class="main-content">
     <div class="top-bar d-flex justify-content-between align-items-center">
         <h4>🏬 Warehouse</h4>
+        <div class="d-flex align-items-center">
+                <img src="<?= htmlspecialchars($_SESSION['profile_picture']) ?>" alt="Profile Picture" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                <span class="ms-2">Welcome, <strong><?= htmlspecialchars($_SESSION['user']) ?></strong></span>
+                <a href="logout.php" class="btn btn-danger btn-sm ms-3">Logout</a>
+            </div>
     </div>
 
     <!-- Success Message -->
     <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success"><?= htmlspecialchars($_GET['success']) ?></div>
+        <div id="success" class="alert alert-success"><?= htmlspecialchars($_GET['success']) ?></div>
     <?php endif; ?>
 
     <!-- Add New Warehouse -->
@@ -99,11 +102,20 @@ $warehouseResult = mysqli_query($conn, $warehouseQuery);
                     <input type="text" name="location" id="location" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="total_products" class="form-label">Total Products</label>
-                    <input type="number" name="total_products" id="total_products" class="form-control" required>
-                </div>
+                        <label for="add-category" class="form-label">Category</label>
+                        <select class="form-control" id="add-category" name="category" required>
+                        <option>Select Category</option>
+                        <option value="Antibiotics">Antibiotics</option>
+                            <option value="Antivirals">Antivirals</option>
+                            <option value="Pain Relievers (Analgesics)">Pain Relievers (Analgesics)</option>
+                            <option value="Anti-inflammatory Drugs">Anti-inflammatory Drugs</option>
+                            <option value="Cardiovascular Drugs">Cardiovascular Drugs</option>
+                            <option value="Diabetes Medications">Diabetes Medications</option>
+                            <option value="Neurological & Psychiatric Drugs">Neurological & Psychiatric Drugs</option>
+                        </select>
+                    </div>
                 <div class="mb-3">
-                    <label for="total_quantity" class="form-label">Total Quantity</label>
+                    <label for="total_quantity" class="form-label">Stock</label>
                     <input type="number" name="total_quantity" id="total_quantity" class="form-control" required>
                 </div>
                 <div class="mb-3">
@@ -124,8 +136,8 @@ $warehouseResult = mysqli_query($conn, $warehouseQuery);
                     <tr>
                         <th>Warehouse Name</th>
                         <th>Location</th>
-                        <th>Total Products</th>
-                        <th>Total Quantity</th>
+                        <th>Category</th>
+                        <th>Stock</th>
                         <th>Expiry</th>
                         <th>Actions</th>
                     </tr>
@@ -135,16 +147,16 @@ $warehouseResult = mysqli_query($conn, $warehouseQuery);
                     <tr>
                         <td><?= $row['name'] ?></td>
                         <td><?= $row['location'] ?></td>
-                        <td><?= $row['total_products'] ?></td>
-                        <td><?= $row['total_quantity'] ?></td>
+                        <td><?= $row['category'] ?></td>
+                        <td><?= $row['stock'] ?></td>
                         <td><?= $row['expiry_date'] ?></td>
                         <td>
                             <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"
                                 data-id="<?= $row['id'] ?>"
                                 data-name="<?= $row['name'] ?>"
                                 data-location="<?= $row['location'] ?>"
-                                data-total-products="<?= $row['total_products'] ?>"
-                                data-total-quantity="<?= $row['total_quantity'] ?>"
+                                data-total-products="<?= $row['category'] ?>"
+                                data-total-quantity="<?= $row['stock'] ?>"
                                 data-expiry-date="<?= $row['expiry_date'] ?>">
                                 Edit
                             </button>
@@ -181,12 +193,21 @@ $warehouseResult = mysqli_query($conn, $warehouseQuery);
                         <input type="text" name="location" id="edit-location" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="edit-total-products" class="form-label">Total Products</label>
-                        <input type="number" name="total_products" id="edit-total-products" class="form-control" required>
+                        <label for="add-category" class="form-label">Category</label>
+                        <select class="form-control" id="add-category" name="category" required>
+                        <option>Select Category</option>
+                        <option value="Antibiotics">Antibiotics</option>
+                            <option value="Antivirals">Antivirals</option>
+                            <option value="Pain Relievers (Analgesics)">Pain Relievers (Analgesics)</option>
+                            <option value="Anti-inflammatory Drugs">Anti-inflammatory Drugs</option>
+                            <option value="Cardiovascular Drugs">Cardiovascular Drugs</option>
+                            <option value="Diabetes Medications">Diabetes Medications</option>
+                            <option value="Neurological & Psychiatric Drugs">Neurological & Psychiatric Drugs</option>
+                        </select>
                     </div>
                     <div class="mb-3">
-                        <label for="edit-total-quantity" class="form-label">Total Quantity</label>
-                        <input type="number" name="total_quantity" id="edit-total-quantity" class="form-control" required>
+                        <label for="edit-total-quantity" class="form-label">Stock</label>
+                        <input type="number" name="stock" id="edit-total-quantity" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label for="edit-expiry-date" class="form-label">Expiry Date</label>
@@ -251,6 +272,18 @@ $warehouseResult = mysqli_query($conn, $warehouseQuery);
         var id = button.getAttribute('data-id');
         document.getElementById('delete-id').value = id;
     });
+// Hide success message after 3 seconds
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            let alertBox = document.getElementById("success");
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.5s";
+                alertBox.style.opacity = "0";
+                setTimeout(() => alertBox.remove(), 500); // Remove element after fade out
+            }
+        }, 2000); // 3 seconds delay
+    });
+</script>
 </script>
 </body>
 </html>

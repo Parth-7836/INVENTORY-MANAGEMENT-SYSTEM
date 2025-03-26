@@ -9,8 +9,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
     $password = trim($_POST['password']);
+    $profile_picture = $_FILES['profile_picture'];
 
-    // Check if the username or email already exists in staff table
+    // Check if the username or email already exists in the staff table
     $sql = "SELECT id FROM staff WHERE username = '$username' OR email = '$email'";
     $result = $conn->query($sql);
 
@@ -18,11 +19,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Staff user exists, set error message
         $error = "Username or Email already exists. Please login.";
     } else {
+        // Handle profile picture upload
+        $target_dir = "uploads/";
+        $target_file = $target_dir . basename($profile_picture['name']);
+        if ($profile_picture['size'] > 0) {
+            move_uploaded_file($profile_picture['tmp_name'], $target_file);
+        } else {
+            $target_file = "uploads/default.png"; // Default profile picture
+        }
+
         // Hash the password
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
         // Insert the staff user into the staff table
-        $sql = "INSERT INTO staff (username, password, email, phone, role) VALUES ('$username', '$hashed_password', '$email', '$phone', 'staff')";
+        $sql = "INSERT INTO staff (username, password, email, phone, role, profile_picture) 
+                VALUES ('$username', '$hashed_password', '$email', '$phone', 'staff', '$target_file')";
         
         if ($conn->query($sql) === TRUE) {
             header("Location: index.php?message=Registration successful. Please login.");
@@ -52,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="alert alert-danger text-center"><?= $error ?></div>
         <?php } ?>
 
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <div class="mb-3">
                 <label class="form-label">Username</label>
                 <input type="text" name="username" class="form-control" required>
@@ -71,6 +82,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="mb-3">
                 <label class="form-label">Phone</label>
                 <input type="text" maxlength="10" name="phone" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Profile Picture</label>
+                <input type="file" name="profile_picture" class="form-control">
             </div>
 
             <button type="submit" class="btn btn-primary w-100">Register</button>

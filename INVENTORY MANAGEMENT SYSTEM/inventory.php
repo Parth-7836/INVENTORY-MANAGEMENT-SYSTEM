@@ -1,4 +1,5 @@
 <?php
+session_start();
 include 'partials/_dbconnect.php';
 include 'partials/_sidebar.php';
 // Handle update stock form submission
@@ -137,6 +138,11 @@ $expiry_result = $conn->query($expiry_sql);
     <div class="main-content">
         <div class="top-bar d-flex justify-content-between align-items-center">
             <h4>📦 Inventory Management</h4>
+            <div class="d-flex align-items-center">
+                <img src="<?= htmlspecialchars($_SESSION['profile_picture']) ?>" alt="Profile Picture" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                <span class="ms-2">Welcome, <strong><?= htmlspecialchars($_SESSION['user']) ?></strong></span>
+                <a href="logout.php" class="btn btn-danger btn-sm ms-3">Logout</a>
+            </div>
         </div>
 
         <!-- Search and Filter Form -->
@@ -147,7 +153,14 @@ $expiry_result = $conn->query($expiry_sql);
                 </div>
                 <div class="col-md-3">
                     <select name="filter" class="form-control">
-                        <option value="">Filter by category</option>
+                        <option>Select Category</option>
+                    <option value="Antibiotics">Antibiotics</option>
+                            <option value="Antivirals">Antivirals</option>
+                            <option value="Pain Relievers (Analgesics)">Pain Relievers (Analgesics)</option>
+                            <option value="Anti-inflammatory Drugs">Anti-inflammatory Drugs</option>
+                            <option value="Cardiovascular Drugs">Cardiovascular Drugs</option>
+                            <option value="Diabetes Medications">Diabetes Medications</option>
+                            <option value="Neurological & Psychiatric Drugs">Neurological & Psychiatric Drugs</option>
                         <?php while ($category_row = $category_result->fetch_assoc()) { ?>
                             <option value="<?php echo $category_row['category']; ?>" <?php if ($filter == $category_row['category']) echo 'selected'; ?>><?php echo $category_row['category']; ?></option>
                         <?php } ?>
@@ -290,10 +303,13 @@ $expiry_result = $conn->query($expiry_sql);
                     <div class="mb-3">
                         <label for="add-category" class="form-label">Category</label>
                         <select class="form-control" id="add-category" name="category" required>
-                            <option value="200ml">200ml</option>
-                            <option value="500ml">500ml</option>
-                            <option value="1litre">1litre</option>
-                            <option value="5litre">5litre</option>
+                            <option value="Antibiotics">Antibiotics</option>
+                            <option value="Antivirals">Antivirals</option>
+                            <option value="Pain Relievers (Analgesics)">Pain Relievers (Analgesics)</option>
+                            <option value="Anti-inflammatory Drugs">Anti-inflammatory Drugs</option>
+                            <option value="Cardiovascular Drugs">Cardiovascular Drugs</option>
+                            <option value="Diabetes Medications">Diabetes Medications</option>
+                            <option value="Neurological & Psychiatric Drugs">Neurological & Psychiatric Drugs</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -335,11 +351,14 @@ $expiry_result = $conn->query($expiry_sql);
                     </div>
                     <div class="mb-3">
                         <label for="edit-category" class="form-label">Category</label>
-                        <select class="form-control" id="edit-category" name="category" required>
-                            <option value="200ml">200ml</option>
-                            <option value="500ml">500ml</option>
-                            <option value="1litre">1litre</option>
-                            <option value="5litre">5litre</option>
+                        <select class="form-control" id="add-category" name="category" required>
+                            <option value="Antibiotics">Antibiotics</option>
+                            <option value="Antivirals">Antivirals</option>
+                            <option value="Pain Relievers (Analgesics)">Pain Relievers (Analgesics)</option>
+                            <option value="Anti-inflammatory Drugs">Anti-inflammatory Drugs</option>
+                            <option value="Cardiovascular Drugs">Cardiovascular Drugs</option>
+                            <option value="Diabetes Medications">Diabetes Medications</option>
+                            <option value="Neurological & Psychiatric Drugs">Neurological & Psychiatric Drugs</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -387,8 +406,11 @@ $expiry_result = $conn->query($expiry_sql);
 </div>
 
 <script>
+    // Set the selected category in the dropdown
     var editModal = document.getElementById('editModal')
+    // Show the edit modal
     editModal.addEventListener('show.bs.modal', function (event) {
+        // Get the button that triggered the modal
         var button = event.relatedTarget
         var id = button.getAttribute('data-id')
         var product_name = button.getAttribute('data-product_name')
@@ -396,7 +418,7 @@ $expiry_result = $conn->query($expiry_sql);
         var stock = button.getAttribute('data-stock')
         var price = button.getAttribute('data-price')
         var expiry_date = button.getAttribute('data-expiry_date')
-
+        // Get the modal title
         var modalTitle = editModal.querySelector('.modal-title')
         var modalBodyInputId = editModal.querySelector('#edit-id')
         var modalBodyInputProductName = editModal.querySelector('#edit-product_name')

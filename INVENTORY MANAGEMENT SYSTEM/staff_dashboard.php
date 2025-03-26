@@ -11,8 +11,13 @@ include 'partials/_sidebar.php';
 <body>
     <!-- Main Content -->
     <div class="main-content">
-        <div class="top-bar d-flex justify-content-between align-items-center">
+        <div class="top-bar d-flex justify-content-between align-items-center p-3 bg-light shadow-sm">
             <h4>📊 Dashboard Overview</h4>
+            <div class="d-flex align-items-center">
+                <img src="<?= htmlspecialchars($_SESSION['profile_picture']) ?>" alt="Profile Picture" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                <span class="ms-2">Welcome, <strong><?= htmlspecialchars($_SESSION['user']) ?></strong></span>
+                <a href="logout.php" class="btn btn-danger btn-sm ms-3">Logout</a>
+            </div>
         </div>
 
         <div class="container mt-4">
@@ -50,5 +55,7 @@ include 'partials/_sidebar.php';
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 </body>
 </html>
