@@ -2,3 +2,4 @@
     <div class="alert alert-primary text-center">
         Welcome, <strong><?= $_SESSION['user'] ?></strong>
     </div>
+</div>

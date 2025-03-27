@@ -66,7 +66,7 @@ $total_rows = $total_result->fetch_row()[0];
 $total_pages = ceil($total_rows / $limit);
 
 // Fetch low-stock alerts
-$low_stock_sql = "SELECT * FROM inventory WHERE stock < 3";
+$low_stock_sql = "SELECT * FROM inventory WHERE stock < 15";
 $low_stock_result = $conn->query($low_stock_sql);
 
 // Fetch expiring soon products
@@ -202,10 +202,10 @@ $expiry_result = $conn->query($expiry_sql);
                                 <td><?php echo $row['expiry_date']; ?></td>
                                 <td>
                                     <!-- EDIT BUTTON -->
-                                    <button class="btn btn-edit btn-sm" data-bs-toggle="modal" data-bs-target="#editModal" data-id="<?php echo $row['id']; ?>" data-product_name="<?php echo $row['product_name']; ?>" data-category="<?php echo $row['category']; ?>" data-stock="<?php echo $row['stock']; ?>" data-price="<?php echo $row['price']; ?>" data-expiry_date="<?php echo $row['expiry_date']; ?>">✏️</button>
+                                    <button class="btn btn-edit btn-sm" data-bs-toggle="modal" data-bs-target="#editModal" data-id="<?php echo $row['product_id']; ?>" data-product_name="<?php echo $row['product_name']; ?>" data-category="<?php echo $row['category']; ?>" data-stock="<?php echo $row['stock']; ?>" data-price="<?php echo $row['price']; ?>" data-expiry_date="<?php echo $row['expiry_date']; ?>">✏️</button>
                                     <!-- DELETE STOCK FORM -->
                                     <form method="POST" class="d-inline-block">
-                                    <button type="button" class="btn btn-delete btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?php echo $row['id']; ?>">🗑️</button>
+                                    <button type="button" class="btn btn-delete btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?php echo $row['product_id']; ?>">🗑️</button>
                                     </form>
                                 </td>
                             </tr>
@@ -298,11 +298,21 @@ $expiry_result = $conn->query($expiry_sql);
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="add-product_name" class="form-label">Product Name</label>
-                        <input type="text" class="form-control" id="add-product_name" name="product_name" required>
+                        <select class="form-control" id="add-product_name" name="product_name" required>
+                        <option value="Select Product">Select Product</option>
+                        <option value="a">a</option>
+                            <option value="b">b</option>
+                            <option value="c">c</option>
+                            <option value="d">d</option>
+                            <option value="e">e</option>
+                            <option value="f">f</option>
+                            <option value="g">g</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="add-category" class="form-label">Category</label>
                         <select class="form-control" id="add-category" name="category" required>
+                        <option value="Select Category">Select Category</option>
                             <option value="Antibiotics">Antibiotics</option>
                             <option value="Antivirals">Antivirals</option>
                             <option value="Pain Relievers (Analgesics)">Pain Relievers (Analgesics)</option>
@@ -347,12 +357,22 @@ $expiry_result = $conn->query($expiry_sql);
                     <input type="hidden" name="id" id="edit-id">
                     <div class="mb-3">
                         <label for="edit-product_name" class="form-label">Product Name</label>
-                        <input type="text" class="form-control" id="edit-product_name" name="product_name" required>
+                        <select class="form-control" id="edit-product_name" name="product_name" required>
+                        <option value="Select Product">Select Product</option>
+                        <option value="a">a</option>
+                            <option value="b">b</option>
+                            <option value="c">c</option>
+                            <option value="d">d</option>
+                            <option value="e">e</option>
+                            <option value="f">f</option>
+                            <option value="g">g</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="edit-category" class="form-label">Category</label>
                         <select class="form-control" id="add-category" name="category" required>
-                            <option value="Antibiotics">Antibiotics</option>
+                        <option value="Select Category">Select Category</option>
+                        <option value="Antibiotics">Antibiotics</option>
                             <option value="Antivirals">Antivirals</option>
                             <option value="Pain Relievers (Analgesics)">Pain Relievers (Analgesics)</option>
                             <option value="Anti-inflammatory Drugs">Anti-inflammatory Drugs</option>
