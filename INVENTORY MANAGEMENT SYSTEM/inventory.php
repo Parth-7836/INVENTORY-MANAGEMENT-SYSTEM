@@ -10,8 +10,14 @@ if (isset($_POST['update_product'])) {
     $stock = $_POST['stock'];
     $price = $_POST['price'];
     $expiry_date = $_POST['expiry_date'];
-    // Update the product
-    $sql = "UPDATE inventory SET product_name = '$product_name', category = '$category', stock = '$stock', price = '$price', expiry_date = '$expiry_date' WHERE id = '$id'";
+    // Update the stock and price by incrementing the existing values
+    $sql = "
+        UPDATE inventory 
+        SET 
+            stock = stock + '$new_stock', 
+            price = price + '$new_price' 
+        WHERE id = '$id'
+    ";
     $conn->query($sql);
 }
 

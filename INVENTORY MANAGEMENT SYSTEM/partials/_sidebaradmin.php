@@ -47,10 +47,9 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-    <h4 class="text-white">📦 Staff Dashboard</h4>
+    <h4 class="text-white">📦 Admin Dashboard</h4>
     <hr class="text-white">
     <a href="staff_dashboard.php">🏠 Dashboard</a>
-    <a href="inventory.php">📦 Inventory</a>
     <a href="#" class="text-white" data-bs-toggle="collapse" data-bs-target="#purchaseMenu" aria-expanded="false">
         📑 Purchase Management
     </a>
@@ -59,6 +58,7 @@
         <a href="suppliers.php" class="ms-3">🏭 Suppliers</a>
     </div>
     <a href="warehouse.php">🏬 Warehouse</a>
+    <a href="reports.php">📊Reports</a>
     <a href="settings.php">⚙️ Settings</a>
 </div>
 

@@ -1,6 +1,7 @@
 <?php
 session_start();
-if (!isset($_SESSION['user']) || $_SESSION['role'] != 'staff') {
+// Check if user is logged in and has the right role
+if (!isset($_SESSION['user']) && $_SESSION['role'] != 'staff') {
     header("Location: index.php");
     exit();
 }

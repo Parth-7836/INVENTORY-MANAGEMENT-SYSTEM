@@ -1,25 +1,21 @@
 <?php
 session_start();
-// Check if user is logged in and is an admin
+// Check if user is logged in and is a staff member
 if (!isset($_SESSION['user']) || $_SESSION['role'] != 'admin') {
     header("Location: index.php");
     exit();
 }
 include 'partials/_dbconnect.php';
-include 'partials/_sidebar.php';
-
-// Fetch total products and their categories
-$productsQuery = "SELECT product_name, category_name FROM products";
-$productsResult = mysqli_query($conn, $productsQuery);
+include 'partials/_sidebaradmin.php';
 
 // Fetch total products
 $totalProductsQuery = "SELECT COUNT(*) AS total_products FROM products";
 $totalProductsResult = mysqli_query($conn, $totalProductsQuery);
 $totalProducts = mysqli_fetch_assoc($totalProductsResult)['total_products'];
 
-// Fetch low stock products (JOIN products and inventory tables)
+// Fetch low stock products
 $lowStockQuery = "
-     SELECT p.product_name, i.stock
+    SELECT p.product_name, i.stock
     FROM products p
     JOIN inventory i ON p.id = i.product_id
     WHERE i.stock < 15";
@@ -29,7 +25,7 @@ while ($row = mysqli_fetch_assoc($lowStockResult)) {
     $lowStockData[] = $row;
 }
 
-// Fetch products nearing expiration (JOIN products and inventory tables)
+// Fetch products nearing expiration
 $nearExpiryQuery = "
     SELECT p.product_name, i.expiry_date
     FROM products p
@@ -40,8 +36,22 @@ $nearExpiryData = [];
 while ($row = mysqli_fetch_assoc($nearExpiryResult)) {
     $nearExpiryData[] = $row;
 }
-// Debugging: Check if data is being fetched correctly
-// Uncomment the following lines to debug the data
+
+// Fetch warehouse stock data
+$warehouseQuery = "
+    SELECT name AS warehouse_name, SUM(stock) AS total_stock
+    FROM warehouses
+    GROUP BY name
+";
+$warehouseResult = mysqli_query($conn, $warehouseQuery);
+$warehouseData = [];
+while ($row = mysqli_fetch_assoc($warehouseResult)) {
+    $warehouseData[] = $row;
+}
+
+// Fetch products and their categories
+$productsQuery = "SELECT product_name, category_name FROM products";
+$productsResult = mysqli_query($conn, $productsQuery);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,9 +76,11 @@ while ($row = mysqli_fetch_assoc($nearExpiryResult)) {
             margin-bottom: 20px;
         }
         .chart-container {
-            width: 100%;
-            height: 400px;
-        }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px; /* Adjust height as needed */
+}
         .table-container {
             margin-top: 20px;
             overflow-x: auto;
@@ -88,18 +100,16 @@ while ($row = mysqli_fetch_assoc($nearExpiryResult)) {
     </style>
 </head>
 <body>
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="top-bar d-flex justify-content-between align-items-center p-3 bg-light shadow-sm">
-            <h4>📊 Dashboard Overview</h4>
+   <!-- Main Content -->
+   <div class="main-content">
+        <div class="top-bar d-flex justify-content-between align-items-center">
+            <h4>📦 Inventory Management</h4>
             <div class="d-flex align-items-center">
                 <img src="<?= htmlspecialchars($_SESSION['profile_picture']) ?>" alt="Profile Picture" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
                 <span class="ms-2">Welcome, <strong><?= htmlspecialchars($_SESSION['user']) ?></strong></span>
                 <a href="logout.php" class="btn btn-danger btn-sm ms-3">Logout</a>
             </div>
         </div>
-
-        <div class="container mt-4">
             <!-- Summary Cards -->
             <div class="row">
                 <div class="col-md-4">
@@ -128,8 +138,8 @@ while ($row = mysqli_fetch_assoc($nearExpiryResult)) {
                 </div>
             </div>
 
-           <!-- Charts -->
-           <div class="row">
+            <!-- Charts -->
+            <div class="row">
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-body">
@@ -152,6 +162,19 @@ while ($row = mysqli_fetch_assoc($nearExpiryResult)) {
                 </div>
             </div>
 
+          <!-- Warehouse Stock Distribution Chart -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title text-center">Warehouse Stock Distribution</h5>
+                <div class="chart-container">
+                    <canvas id="warehouseChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
             <!-- Total Products and Categories Table -->
             <div class="table-container">
                 <h5 class="mb-3">📋 Total Products and Categories</h5>
@@ -278,6 +301,52 @@ while ($row = mysqli_fetch_assoc($nearExpiryResult)) {
                         ticks: {
                             font: {
                                 size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Warehouse Chart Data
+        const warehouseLabels = <?= json_encode(array_column($warehouseData, 'warehouse_name')) ?>;
+        const warehouseValues = <?= json_encode(array_column($warehouseData, 'total_stock')) ?>;
+
+        const warehouseChart = new Chart(document.getElementById('warehouseChart'), {
+            type: 'pie',
+            data: {
+                labels: warehouseLabels,
+                datasets: [{
+                    label: 'Stock Distribution',
+                    data: warehouseValues,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14
                             }
                         }
                     }
