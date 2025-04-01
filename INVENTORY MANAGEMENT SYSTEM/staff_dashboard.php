@@ -6,7 +6,12 @@ if (!isset($_SESSION['user']) || $_SESSION['role'] != 'staff') {
     exit();
 }
 include 'partials/_dbconnect.php';
-include 'partials/_sidebar.php';
+// Include the appropriate sidebar based on the user's role
+if ($_SESSION['role'] == 'admin') {
+    include 'partials/_sidebaradmin.php';
+} else {
+    include 'partials/_sidebar.php';
+}
 
 // Fetch total products
 $totalProductsQuery = "SELECT COUNT(*) AS total_products FROM products";

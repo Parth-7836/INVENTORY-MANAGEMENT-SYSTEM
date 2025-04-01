@@ -1,119 +1,115 @@
 <?php
 session_start();
-if (!isset($_SESSION['user']) || $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['user']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'staff')) {
     header("Location: index.php");
     exit();
 }
+
 include 'partials/_dbconnect.php';
-include 'partials/_sidebar.php';
+if ($_SESSION['role'] == 'admin') {
+    include 'partials/_sidebaradmin.php';
+} else {
+    include 'partials/_sidebar.php';
+}
 
-// Fetch total sales and revenue
-$salesQuery = "SELECT SUM(quantity_sold) AS total_sales, SUM(total_revenue) AS total_revenue FROM sales";
-$salesResult = mysqli_query($conn, $salesQuery);
-$salesData = mysqli_fetch_assoc($salesResult);
+// Fetch total sales
+$totalSalesQuery = "
+    SELECT SUM(stock * price) AS total_sales
+    FROM inventory";
+$totalSalesResult = mysqli_query($conn, $totalSalesQuery);
+$totalSales = mysqli_fetch_assoc($totalSalesResult)['total_sales'] ?? 0;
 
-// Fetch fast-moving & slow-moving products
-$fastMovingQuery = "SELECT product_name, SUM(sold) AS total_sold FROM inventory GROUP BY product_name ORDER BY total_sold DESC LIMIT 5";
-$slowMovingQuery = "SELECT product_name, SUM(sold) AS total_sold FROM inventory GROUP BY product_name ORDER BY total_sold ASC LIMIT 5";
-$fastMovingResult = mysqli_query($conn, $fastMovingQuery);
-$slowMovingResult = mysqli_query($conn, $slowMovingQuery);
+// Fetch top-selling products
+$topSellingProductsQuery = "
+    SELECT product_name, category, stock, price, (stock * price) AS total_revenue
+    FROM inventory
+    ORDER BY total_revenue DESC
+    LIMIT 5";
+$topSellingProductsResult = mysqli_query($conn, $topSellingProductsQuery);
 
-// Fetch financial reports
-$financeQuery = "SELECT * FROM financial_reports ORDER BY report_date DESC LIMIT 1";
-$financeResult = mysqli_query($conn, $financeQuery);
-$financeData = mysqli_fetch_assoc($financeResult);
+// Fetch sales by category
+$salesByCategoryQuery = "
+    SELECT category, SUM(stock) AS total_quantity, SUM(stock * price) AS total_revenue
+    FROM inventory
+    GROUP BY category
+    ORDER BY total_revenue DESC";
+$salesByCategoryResult = mysqli_query($conn, $salesByCategoryQuery);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Reports & Analytics</title>
+    <title>Sales Reports</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <!-- Main Content -->
-    <div class="main-content">
+<div class="main-content">
         <div class="top-bar d-flex justify-content-between align-items-center">
-            <h4>📊 Reports and Analytics</h4>
+        <h4>📊 Sales Reports</h4>
         </div>
-            <!-- Sales Report -->
-            <div class="col-md-4">
-                <div class="card text-white bg-primary mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Sales</h5>
-                        <p class="card-text"><?= $salesData['total_sales'] ?? 0 ?> Items</p>
-                    </div>
-                </div>
+        <!-- Total Sales -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">Total Sales</div>
+            <div class="card-body">
+                <h5>Total Sales: $<?= number_format($totalSales, 2) ?></h5>
             </div>
-            <div class="col-md-4">
-                <div class="card text-white bg-success mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Revenue</h5>
-                        <p class="card-text">$<?= number_format($salesData['total_revenue'] ?? 0, 2) ?></p>
-                    </div>
-                </div>
-            </div>
+        </div>
 
-            <!-- Fast-Moving Products -->
-            <div class="col-md-4">
-                <div class="card mb-3">
-                    <div class="card-header bg-info text-white">🔥 Fast-Moving Products</div>
-                    <div class="card-body">
-                        <ul class="list-group">
-                            <?php while ($row = mysqli_fetch_assoc($fastMovingResult)): ?>
-                                <li class="list-group-item"><?= $row['product_name'] ?> - Sold: <?= $row['total_sold'] ?></li>
-                            <?php endwhile; ?>
-                        </ul>
-                    </div>
-                </div>
+        <!-- Top-Selling Products -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">Top-Selling Products</div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Price</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($topSellingProductsResult)): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['product_name']) ?></td>
+                            <td><?= htmlspecialchars($row['category']) ?></td>
+                            <td><?= $row['stock'] ?></td>
+                            <td>$<?= number_format($row['price'], 2) ?></td>
+                            <td>$<?= number_format($row['total_revenue'], 2) ?></td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
             </div>
+        </div>
 
-            <!-- Slow-Moving Products -->
-            <div class="col-md-4">
-                <div class="card mb-3">
-                    <div class="card-header bg-warning text-white">🐌 Slow-Moving Products</div>
-                    <div class="card-body">
-                        <ul class="list-group">
-                            <?php while ($row = mysqli_fetch_assoc($slowMovingResult)): ?>
-                                <li class="list-group-item"><?= $row['product_name'] ?> - Sold: <?= $row['total_sold'] ?></li>
-                            <?php endwhile; ?>
-                        </ul>
-                    </div>
-                </div>
+        <!-- Sales by Category -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-white">Sales by Category</div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Total Quantity</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($salesByCategoryResult)): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['category']) ?></td>
+                            <td><?= $row['total_quantity'] ?></td>
+                            <td>$<?= number_format($row['total_revenue'], 2) ?></td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
             </div>
-
-            <!-- Financial Reports -->
-            <div class="col-md-12">
-                <div class="card mb-3">
-                    <div class="card-header bg-dark text-white">💰 Financial Report (Latest)</div>
-                    <div class="card-body">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Total Income</th>
-                                    <th>Total Expense</th>
-                                    <th>Net Profit</th>
-                                    <th>Report Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>$<?= number_format($financeData['total_income'] ?? 0, 2) ?></td>
-                                    <td>$<?= number_format($financeData['total_expense'] ?? 0, 2) ?></td>
-                                    <td class="<?= ($financeData['net_profit'] ?? 0) >= 0 ? 'text-success' : 'text-danger' ?>">
-                                        $<?= number_format($financeData['net_profit'] ?? 0, 2) ?>
-                                    </td>
-                                    <td><?= $financeData['report_date'] ?? 'N/A' ?></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
+</div>
 </body>
 </html>

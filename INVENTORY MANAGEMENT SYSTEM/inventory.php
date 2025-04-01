@@ -1,7 +1,12 @@
 <?php
 session_start();
 include 'partials/_dbconnect.php';
-include 'partials/_sidebar.php';
+// Include the appropriate sidebar based on the user's role
+if ($_SESSION['role'] == 'admin') {
+    include 'partials/_sidebaradmin.php';
+} else {
+    include 'partials/_sidebar.php';
+}
 // Handle update stock form submission
 if (isset($_POST['update_product'])) {
     $id = $_POST['id'];

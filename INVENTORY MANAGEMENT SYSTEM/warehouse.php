@@ -1,11 +1,16 @@
 <?php
 session_start();
-if (!isset($_SESSION['user']) || $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['user']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'staff')) {
     header("Location: index.php");
     exit();
 }
 include 'partials/_dbconnect.php';
-include 'partials/_sidebar.php';
+// Include the appropriate sidebar based on the user's role
+if ($_SESSION['role'] == 'admin') {
+    include 'partials/_sidebaradmin.php';
+} else {
+    include 'partials/_sidebar.php';
+}
 
 // Handle new warehouse creation
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_warehouse'])) {
@@ -283,7 +288,6 @@ $warehouseResult = mysqli_query($conn, $warehouseQuery);
             }
         }, 2000); // 3 seconds delay
     });
-</script>
 </script>
 </body>
 </html>

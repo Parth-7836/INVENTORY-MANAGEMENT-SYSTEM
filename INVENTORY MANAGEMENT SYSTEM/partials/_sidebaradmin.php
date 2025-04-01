@@ -49,7 +49,7 @@
     <div class="sidebar">
     <h4 class="text-white">📦 Admin Dashboard</h4>
     <hr class="text-white">
-    <a href="staff_dashboard.php">🏠 Dashboard</a>
+    <a href="admin_dashboard.php">🏠 Dashboard</a>
     <a href="#" class="text-white" data-bs-toggle="collapse" data-bs-target="#purchaseMenu" aria-expanded="false">
         📑 Purchase Management
     </a>
@@ -59,7 +59,7 @@
     </div>
     <a href="warehouse.php">🏬 Warehouse</a>
     <a href="reports.php">📊Reports</a>
-    <a href="settings.php">⚙️ Settings</a>
+    <a href="usermanagement.php">🧑‍💻User Management</a>
 </div>
 
 </body>

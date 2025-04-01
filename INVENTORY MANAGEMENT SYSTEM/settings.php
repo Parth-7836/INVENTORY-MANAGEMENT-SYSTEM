@@ -5,7 +5,12 @@ if (!isset($_SESSION['user']) || $_SESSION['role'] != 'staff') {
     exit();
 }
 include 'partials/_dbconnect.php';
-include 'partials/_sidebar.php';
+// Include the appropriate sidebar based on the user's role
+if ($_SESSION['role'] == 'admin') {
+    include 'partials/_sidebaradmin.php';
+} else {
+    include 'partials/_sidebar.php';
+}
 
 // Fetch staff profile data
 $user_id = $_SESSION['user_id']; // Assuming `user_id` is stored in the session

@@ -1,12 +1,17 @@
 <?php
 session_start();
 // Check if user is logged in and has the right role
-if (!isset($_SESSION['user']) && $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['user']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'staff')) {
     header("Location: index.php");
     exit();
 }
 include 'partials/_dbconnect.php';
-include 'partials/_sidebar.php';
+// Include the appropriate sidebar based on the user's role
+if ($_SESSION['role'] == 'admin') {
+    include 'partials/_sidebaradmin.php';
+} else {
+    include 'partials/_sidebar.php';
+}
 
 // Handle new purchase order creation
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

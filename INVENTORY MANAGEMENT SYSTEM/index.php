@@ -13,7 +13,7 @@ function userExists($conn, $email) {
 // Auto-create Admin if not exists
 if (!userExists($conn, "admin@example.com")) {
     $admin_pass = password_hash("admin123", PASSWORD_BCRYPT);
-    $conn->query("INSERT INTO staff (email, password, role) VALUES ('admin@example.com', '$admin_pass', 'admin')");
+    $conn->query("INSERT INTO staff (username,email,phone, password, role) VALUES ('admin','admin@example.com','9999999999','$admin_pass', 'admin')");
 }
 
 $error = "";
